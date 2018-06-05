@@ -25,9 +25,9 @@ class NpuzzleBoard:
 
     def get_empty_position(self):
         for row in range(self._size):
-            if 0 in self.row:
-                for col in row:
-                    if col == 0:
+            if 0 in self._puzzle[row]:
+                for col in range(self._size):
+                    if self._puzzle[row][col] == 0:
                         return row, col
 
     def is_solvable(self):
