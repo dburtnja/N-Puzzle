@@ -98,6 +98,8 @@ class NpuzzleBoard:
 
     def is_solvable(self):
         ordered_puzzle = list(self.go_by_order())
+        empty_index = ordered_puzzle.index(0)
+        print(empty_index)
         my_sum = 0
 
         for i in range(self._size ** 2):
