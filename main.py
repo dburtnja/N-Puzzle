@@ -33,6 +33,19 @@ class NpuzzleBoard:
             if 0 in self._puzzle[row]:
                 return row
 
+    def get_empty_position_sum(self):
+        x = 0
+        y = 0
+        while (x < self._size):
+            while (y < self._size):
+                if (self._puzzle[x][y] == 0):
+                    print ("POS =  " + str((x*self._size + y) // self._size  + 1))
+                    return (((x*self._size) - 1) // self._size + 1)
+                y += 1
+            x+=1
+            y = 0
+
+
     def get_empty_position_column(self):
         row = self.get_empty_position_row()
         for col in range(self._size):
@@ -93,7 +106,8 @@ class NpuzzleBoard:
             print(l)
             my_sum += l
         if self._size % 2 == 0:
-            empty_row_position = self.get_empty_position_row() + 1
+            # empty_row_position = self.get_empty_position_row() + 1
+            empty_row_position = self.get_empty_position_sum()
             print("row nbr: " + str(empty_row_position))
             print("sum: " + str(my_sum))
             return (my_sum + empty_row_position) % 2 == 0
