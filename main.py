@@ -84,15 +84,18 @@ class NpuzzleBoard:
     #         self._iterate()
 
     def is_solvable(self):
-        ordered_puzzle = list(self.go_by_order())
+        if self._size % 2 == 0:
+            ordered_puzzle = sum(self._puzzle, [])
+        else:
+            ordered_puzzle = list(self.go_by_order())
         empty_index = ordered_puzzle.index(0)
         print(empty_index)
         my_sum = 0
 
         for i in range(self._size ** 2):
-            print(ordered_puzzle[i:])
+            # print(ordered_puzzle[i:])
             l = len([n for n in ordered_puzzle[i:] if n < ordered_puzzle[i] and n != 0])
-            print(l)
+            # print(l)
             my_sum += l
         if self._size % 2 == 0:
             empty_row_position = self.get_empty_position_row() + 1
@@ -109,7 +112,7 @@ class NpuzzleBoard:
 if __name__ == "__main__":
     generate = True
     if generate:
-        out = check_output(['python', 'npuzzle-gen.py', '4'])
+        out = check_output(['python', 'npuzzle-gen.py', '3'])
         print(out)
         board = NpuzzleBoard(out)
     else:
