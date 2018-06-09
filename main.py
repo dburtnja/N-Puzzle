@@ -33,19 +33,6 @@ class NpuzzleBoard:
             if 0 in self._puzzle[row]:
                 return row
 
-    def get_empty_position_sum(self):
-        x = 0
-        y = 0
-        while (x < self._size):
-            while (y < self._size):
-                if (self._puzzle[x][y] == 0):
-                    print ("POS =  " + str((x*self._size + y) // self._size  + 1))
-                    return (((x*self._size) - 1) // self._size + 1)
-                y += 1
-            x+=1
-            y = 0
-
-
     def get_empty_position_column(self):
         row = self.get_empty_position_row()
         for col in range(self._size):
@@ -97,20 +84,21 @@ class NpuzzleBoard:
     #         self._iterate()
 
     def is_solvable(self):
-        ordered_puzzle = list(self.go_by_order())
-        empty_index = ordered_puzzle.index(0) + 1
-        print ("INDEX = " + str(empty_index))
-        print ("LINE = " + str((empty_index - 1) // self._size + 1))
+        if self._size % 2 == 0:
+            ordered_puzzle = sum(self._puzzle, [])
+        else:
+            ordered_puzzle = list(self.go_by_order())
+        empty_index = ordered_puzzle.index(0)
+        print(empty_index)
         my_sum = 0
 
         for i in range(self._size ** 2):
-            print(ordered_puzzle[i:])
+            # print(ordered_puzzle[i:])
             l = len([n for n in ordered_puzzle[i:] if n < ordered_puzzle[i] and n != 0])
-            print(l)
+            # print(l)
             my_sum += l
         if self._size % 2 == 0:
-            # empty_row_position = self.get_empty_position_row() + 1
-            empty_row_position = (empty_index - 1) // self._size + 1
+            empty_row_position = self.get_empty_position_row() + 1
             print("row nbr: " + str(empty_row_position))
             print("sum: " + str(my_sum))
             return (my_sum + empty_row_position) % 2 == 0
@@ -124,7 +112,7 @@ class NpuzzleBoard:
 if __name__ == "__main__":
     generate = True
     if generate:
-        out = check_output(['python', 'npuzzle-gen.py', '4'])
+        out = check_output(['python', 'npuzzle-gen.py', '3'])
         print(out)
         board = NpuzzleBoard(out)
     else:
