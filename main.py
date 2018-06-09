@@ -14,6 +14,9 @@ class NpuzzleBoard:
                 self._create_board(board_file.readlines())
         except:
             print("Error on creation board")
+        self._values_size = self._size ** 2
+        self._sorted_array = [i for i in range(1, self._values_size + 1)]
+        self._sorted_array[self._values_size - 1] = 0
 
 
     def _create_board(self, board_lines):
@@ -38,6 +41,13 @@ class NpuzzleBoard:
         for col in range(self._size):
             if 0 == self._puzzle[row][col]:
                 return col
+
+    def get_number_of_wrong_elements(self):
+        diff_elements = 0
+        for index, element in enumerate(self.go_by_order()):
+            if self._sorted_array[index] != element:
+                diff_elements += 1
+        return diff_elements
 
     def go_by_order(self):
         cur_size = self._size - 1
@@ -112,7 +122,7 @@ class NpuzzleBoard:
 if __name__ == "__main__":
     generate = True
     if generate:
-        out = check_output(['python', 'npuzzle-gen.py', '3'])
+        out = check_output(['python', 'npuzzle-gen.py', '4'])
         print(out)
         board = NpuzzleBoard(out)
     else:
@@ -120,4 +130,5 @@ if __name__ == "__main__":
         board = NpuzzleBoard(puzzle_file)
     if not board.is_solvable():
         print("This puzzle is unsolvable")
+    print("Number not placed elements: {}".format(board.get_number_of_wrong_elements()))
     print(board)
