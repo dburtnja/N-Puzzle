@@ -98,8 +98,9 @@ class NpuzzleBoard:
 
     def is_solvable(self):
         ordered_puzzle = list(self.go_by_order())
-        empty_index = ordered_puzzle.index(0)
-        print(empty_index)
+        empty_index = ordered_puzzle.index(0) + 1
+        print ("INDEX = " + str(empty_index))
+        print ("LINE = " + str((empty_index - 1) // self._size + 1))
         my_sum = 0
 
         for i in range(self._size ** 2):
@@ -109,7 +110,7 @@ class NpuzzleBoard:
             my_sum += l
         if self._size % 2 == 0:
             # empty_row_position = self.get_empty_position_row() + 1
-            empty_row_position = self.get_empty_position_sum()
+            empty_row_position = (empty_index - 1) // self._size + 1
             print("row nbr: " + str(empty_row_position))
             print("sum: " + str(my_sum))
             return (my_sum + empty_row_position) % 2 == 0
