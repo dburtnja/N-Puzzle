@@ -3,23 +3,28 @@ from subprocess import check_output
 
 
 class NpuzzleBoard:
+    _sorted_array = None
+    _values_size = None
+    _size = None
 
     def __init__(self, board_file):
+        self._number_of_wrong_elements = None
+        self._parent = None
         self._puzzle = []
-        self._size = 0
-        try:
-            if isinstance(board_file, str):
-                self._create_board(board_file.split('\n'))
-            else:
-                self._create_board(board_file.readlines())
-        except:
-            print("Error on creation board")
-        self._values_size = self._size ** 2
-        self._sorted_array = [i for i in range(1, self._values_size + 1)]
-        self._sorted_array[self._values_size - 1] = 0
-
+        if isinstance(board_file, NpuzzleBoard):
+            self.__dict__.update(board_file.__dict__)
+        elif isinstance(board_file, str):
+            self._create_board(board_file.split('\n'))
+        else:
+            self._create_board(board_file.readlines())
+        if not self._sorted_array:
+            self._values_size = self._size ** 2
+            self._sorted_array = [i for i in range(1, self._values_size + 1)]
+            self._sorted_array[self._values_size - 1] = 0
 
     def _create_board(self, board_lines):
+        self._null_x = None
+        self._null_y = None
         for line in board_lines:
             if line and line != '\n' and not line.startswith("#"):
                 line = line.split("#")[0]
@@ -29,18 +34,19 @@ class NpuzzleBoard:
                     row = line.split()
                     if len(row) != self._size:
                         raise ValueError
-                    self._puzzle.append([int(number) for number in row])
+                    int_row = []
+                    for x_index, number in enumerate(row):
+                        number = int(number)
+                        if number == 0:
+                            self._null_x = x_index
+                        int_row.append(number)
+                    self._puzzle.append(int_row)
+        self._null_y = self._get_null_row()
 
-    def get_empty_position_row(self):
-        for row in range(self._size):
-            if 0 in self._puzzle[row]:
-                return row
-
-    def get_empty_position_column(self):
-        row = self.get_empty_position_row()
-        for col in range(self._size):
-            if 0 == self._puzzle[row][col]:
-                return col
+    def _get_null_row(self):
+        for i in range(self._size):
+            if 0 in self._puzzle[i]:
+                return i
 
     def get_number_of_wrong_elements(self):
         diff_elements = 0
@@ -79,50 +85,64 @@ class NpuzzleBoard:
                 break
             reverse = not reverse
 
-    # def _iterate(self, reverse, horizontal, x, y, i):
-    #     if not reverse:
-    #         while x <
-    #
-    #
-    # def go_by_order(self):
-    #     reverse = False
-    #     x = 0
-    #     y = 0
-    #     i = self._size ** 2
-    #
-    #     while i > 0:
-    #         self._iterate()
-
     def is_solvable(self):
         if self._size % 2 == 0:
             ordered_puzzle = sum(self._puzzle, [])
         else:
             ordered_puzzle = list(self.go_by_order())
-        empty_index = ordered_puzzle.index(0)
-        print(empty_index)
         my_sum = 0
 
         for i in range(self._size ** 2):
-            # print(ordered_puzzle[i:])
-            l = len([n for n in ordered_puzzle[i:] if n < ordered_puzzle[i] and n != 0])
-            # print(l)
-            my_sum += l
+            my_sum += len([n for n in ordered_puzzle[i:] if n < ordered_puzzle[i] and n != 0])
         if self._size % 2 == 0:
-            empty_row_position = self.get_empty_position_row() + 1
-            print("row nbr: " + str(empty_row_position))
-            print("sum: " + str(my_sum))
-            return (my_sum + empty_row_position) % 2 == 0
+            return (my_sum + self._null_y + 1) % 2 == 0
         else:
             return my_sum % 2 == 0
 
     def __str__(self):
-        return str(self._puzzle)
+        result = [" ".join(str(el) for el in line) for line in self._puzzle]
+        return str("\n".join(result))
+
+    def _change_null(self, new_null_x, new_null_y):
+        if new_null_x != self._null_x:
+            print("x")
+            print(self)
+            self._puzzle[self._null_y][new_null_x], self._puzzle[self._null_y][self._null_x] = \
+                self._puzzle[self._null_y][self._null_x], self._puzzle[self._null_y][new_null_x]
+            self._null_x = new_null_x
+            print(self)
+        if new_null_y != self._null_y:
+            print("y")
+            print(self)
+            self._puzzle[new_null_y][self._null_x], self._puzzle[self._null_y][self._null_x] =\
+                self._puzzle[self._null_y][self._null_x], self._puzzle[new_null_y][self._null_x]
+            self._null_y = new_null_y
+            print(self)
+
+    def _new_board_with(self, null_x, null_y):
+        new_null_x = null_x + self._null_x
+        new_null_y = null_y + self._null_y
+
+        if 0 <= new_null_x < self._size and 0 <= new_null_y < self._size:
+            new_board = NpuzzleBoard(self)
+            new_board._change_null(new_null_x, new_null_y)
+            return new_board
+
+    def get_available_boards(self):
+        boards = []
+        val = [-1, 0, 1, 0, -1]
+        for i in range(4):
+            iner_new_board = self._new_board_with(val[i], val[i+1])
+            if iner_new_board:
+                boards.append(iner_new_board)
+        return boards
+
 
 
 if __name__ == "__main__":
     generate = True
     if generate:
-        out = check_output(['python', 'npuzzle-gen.py', '4'])
+        out = check_output(['python', 'npuzzle-gen.py', '3'])
         print(out)
         board = NpuzzleBoard(out)
     else:
@@ -132,3 +152,8 @@ if __name__ == "__main__":
         print("This puzzle is unsolvable")
     print("Number not placed elements: {}".format(board.get_number_of_wrong_elements()))
     print(board)
+    for new_board in board.get_available_boards():
+        print('\n')
+        print(new_board)
+
+
