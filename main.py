@@ -1,18 +1,20 @@
 from tkFileDialog import askopenfile
 from subprocess import check_output
+from copy import deepcopy
+from bisect import insort
 
 
 class NpuzzleBoard:
     _sorted_array = None
     _values_size = None
     _size = None
+    _g = 0
 
     def __init__(self, board_file):
-        self._number_of_wrong_elements = None
         self._parent = None
         self._puzzle = []
         if isinstance(board_file, NpuzzleBoard):
-            self.__dict__.update(board_file.__dict__)
+            self.__dict__.update(deepcopy(board_file.__dict__))
         elif isinstance(board_file, str):
             self._create_board(board_file.split('\n'))
         else:
@@ -21,6 +23,9 @@ class NpuzzleBoard:
             self._values_size = self._size ** 2
             self._sorted_array = [i for i in range(1, self._values_size + 1)]
             self._sorted_array[self._values_size - 1] = 0
+
+    def get_final_weight(self):
+        return self._final_weight
 
     def _create_board(self, board_lines):
         self._null_x = None
@@ -48,7 +53,7 @@ class NpuzzleBoard:
             if 0 in self._puzzle[i]:
                 return i
 
-    def get_number_of_wrong_elements(self):
+    def _get_number_of_wrong_elements(self):
         diff_elements = 0
         for index, element in enumerate(self.go_by_order()):
             if self._sorted_array[index] != element:
@@ -85,6 +90,9 @@ class NpuzzleBoard:
                 break
             reverse = not reverse
 
+    def is_solved(self):
+        return self._get_number_of_wrong_elements() == 0
+
     def is_solvable(self):
         if self._size % 2 == 0:
             ordered_puzzle = sum(self._puzzle, [])
@@ -105,19 +113,19 @@ class NpuzzleBoard:
 
     def _change_null(self, new_null_x, new_null_y):
         if new_null_x != self._null_x:
-            print("x")
-            print(self)
             self._puzzle[self._null_y][new_null_x], self._puzzle[self._null_y][self._null_x] = \
                 self._puzzle[self._null_y][self._null_x], self._puzzle[self._null_y][new_null_x]
             self._null_x = new_null_x
-            print(self)
         if new_null_y != self._null_y:
-            print("y")
-            print(self)
             self._puzzle[new_null_y][self._null_x], self._puzzle[self._null_y][self._null_x] =\
                 self._puzzle[self._null_y][self._null_x], self._puzzle[new_null_y][self._null_x]
             self._null_y = new_null_y
-            print(self)
+
+    def _update_generation(self):
+        self._g += 1
+
+    def get_final_weight(self):
+        return self._g + self._get_number_of_wrong_elements()
 
     def _new_board_with(self, null_x, null_y):
         new_null_x = null_x + self._null_x
@@ -126,16 +134,35 @@ class NpuzzleBoard:
         if 0 <= new_null_x < self._size and 0 <= new_null_y < self._size:
             new_board = NpuzzleBoard(self)
             new_board._change_null(new_null_x, new_null_y)
+            new_board._update_generation()
+            new_board._parent = self
             return new_board
 
     def get_available_boards(self):
         boards = []
         val = [-1, 0, 1, 0, -1]
         for i in range(4):
-            iner_new_board = self._new_board_with(val[i], val[i+1])
-            if iner_new_board:
-                boards.append(iner_new_board)
+            inner_new_board = self._new_board_with(val[i], val[i+1])
+            if inner_new_board:
+                boards.append(inner_new_board)
         return boards
+
+
+def solve_puzzle(board):
+    opened = [board]
+    closed = []
+
+    while opened:
+        if opened[0].is_solved():
+            return opened[0]
+        insort(closed, opened.pop(0))
+        for new_board in board.get_available_boards():
+            if new_board in closed:
+                print("New board in closed")
+                print(new_board)
+            if new_board not in opened:
+                insort(opened, new_board)
+
 
 
 
@@ -150,10 +177,9 @@ if __name__ == "__main__":
         board = NpuzzleBoard(puzzle_file)
     if not board.is_solvable():
         print("This puzzle is unsolvable")
-    print("Number not placed elements: {}".format(board.get_number_of_wrong_elements()))
-    print(board)
     for new_board in board.get_available_boards():
         print('\n')
         print(new_board)
+        print(new_board.get_final_weight())
 
 
