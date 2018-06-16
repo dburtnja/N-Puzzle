@@ -122,7 +122,7 @@ class NpuzzleBoard:
 if __name__ == "__main__":
     generate = True
     if generate:
-        out = check_output(['python', 'npuzzle-gen.py', '4'])
+        out = check_output(['python', 'npuzzle-gen.py', '6'])
         print(out)
         board = NpuzzleBoard(out)
     else:
@@ -131,4 +131,27 @@ if __name__ == "__main__":
     if not board.is_solvable():
         print("This puzzle is unsolvable")
     print("Number not placed elements: {}".format(board.get_number_of_wrong_elements()))
-    print(board)
+    # print(board)
+    x = 0
+    y = 0
+    size = board._size - 1
+    round = 0
+    while (size > 0):
+        for i in range(0, size - round):
+            print (board._puzzle[x][y])
+            y = y + 1
+        for i in range(0, size - round):
+            print (board._puzzle[x][y])
+            x = x + 1
+        for i in range(round, size):
+            print (board._puzzle[x][y])
+            y = y - 1
+        for i in range(round, size):
+            print (board._puzzle[x][y])
+            x = x - 1
+        x += 1
+        y += 1
+        size -= 1
+        round += 1
+    if board._size % 2:
+        print(board._puzzle[x - 1][y - 1])
