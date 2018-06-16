@@ -157,6 +157,7 @@ class NpuzzleBoard:
             return self.get_final_weight() < other.get_final_weight()
         return False
 
+
 def solve_puzzle(board):
     opened = [board]
     closed = []
@@ -175,8 +176,6 @@ def solve_puzzle(board):
                 print(new_board)
             elif new_board not in opened:
                 insort(opened, new_board)
-
-
 
 
 if __name__ == "__main__":
