@@ -109,7 +109,7 @@ class NpuzzleBoard:
 
     def __str__(self):
         result = [" ".join(str(el) for el in line) for line in self._puzzle]
-        return str("\n".join(result))
+        return str("\n".join(result)) + "\n" + str(self._get_number_of_wrong_elements())
 
     def _change_null(self, new_null_x, new_null_y):
         if new_null_x != self._null_x:
@@ -147,20 +147,33 @@ class NpuzzleBoard:
                 boards.append(inner_new_board)
         return boards
 
+    def __cmp__(self, other):
+        if isinstance(other, NpuzzleBoard):
+            return cmp(other._puzzle, self._puzzle)
+        return False
+
+    def __lt__(self, other):
+        if isinstance(other, NpuzzleBoard):
+            return self.get_final_weight() < other.get_final_weight()
+        return False
 
 def solve_puzzle(board):
     opened = [board]
     closed = []
 
     while opened:
-        if opened[0].is_solved():
+        current = opened.pop(0)
+        print("----------->")
+        print(current)
+        print("<-----------")
+        if current.is_solved():
             return opened[0]
-        insort(closed, opened.pop(0))
-        for new_board in board.get_available_boards():
+        insort(closed, current)
+        for new_board in current.get_available_boards():
             if new_board in closed:
                 print("New board in closed")
                 print(new_board)
-            if new_board not in opened:
+            elif new_board not in opened:
                 insort(opened, new_board)
 
 
@@ -177,9 +190,11 @@ if __name__ == "__main__":
         board = NpuzzleBoard(puzzle_file)
     if not board.is_solvable():
         print("This puzzle is unsolvable")
-    for new_board in board.get_available_boards():
-        print('\n')
-        print(new_board)
-        print(new_board.get_final_weight())
+    # for new_board in board.get_available_boards():
+    #     print('\n')
+    #     print(new_board)
+    #     print(new_board.get_final_weight())
+    else:
+        solve_puzzle(board)
 
 
