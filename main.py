@@ -13,8 +13,20 @@ class Cell:
 
     def __cmp__(self, other):
         if isinstance(other, Cell):
-            return self.number == other.number
+            p = self.number == other.number
+            return p
         return False
+
+    def __lt__(self, other):
+        if isinstance(other, Cell):
+            return self.number < other.number
+        return False
+
+    def __str__(self):
+        return str(self.number)
+
+    def __repr__(self):
+        return str(self.number)
 
 class NpuzzleBoard:
     _sorted_array = None
@@ -67,7 +79,7 @@ class NpuzzleBoard:
 
     def _get_null_row(self):
         for i in range(self._size):
-            if 0 in self._puzzle[i]:
+            if Cell(0, None, None) in self._puzzle[i]:
                 return i
 
     def go_by_order(self):
@@ -118,19 +130,20 @@ class NpuzzleBoard:
             return my_sum % 2 == 0
 
     def __str__(self):
-        result = [" ".join(str(el) for el in line) for line in self._puzzle]
+        result = [" ".join(str(el.number) for el in line) for line in self._puzzle]
         return str("\n".join(result)) + "\n" + str(self._final_weight)
 
-    def _change_null(self, new_null_x, new_null_y):
-        if new_null_x != self._null_x:
-            self._puzzle[self._null_y][new_null_x], self._puzzle[self._null_y][self._null_x] = \
-                self._puzzle[self._null_y][self._null_x], self._puzzle[self._null_y][new_null_x]
-            self._null_x = new_null_x
-        if new_null_y != self._null_y:
-            self._puzzle[new_null_y][self._null_x], self._puzzle[self._null_y][self._null_x] =\
-                self._puzzle[self._null_y][self._null_x], self._puzzle[new_null_y][self._null_x]
-            self._null_y = new_null_y
-        self._puzzle[new_null_y][new_null_x]
+    # def _change_null(self, new_null_x, new_null_y):
+    #
+    #     if new_null_x != self._null_x:
+    #         self._puzzle[self._null_y][new_null_x], self._puzzle[self._null_y][self._null_x] = \
+    #             self._puzzle[self._null_y][self._null_x], self._puzzle[self._null_y][new_null_x]
+    #         self._null_x = new_null_x
+    #     if new_null_y != self._null_y:
+    #         self._puzzle[new_null_y][self._null_x], self._puzzle[self._null_y][self._null_x] =\
+    #             self._puzzle[self._null_y][self._null_x], self._puzzle[new_null_y][self._null_x]
+    #         self._null_y = new_null_y
+    #     self._puzzle[new_null_y][new_null_x]
 
     def _update_generation(self):
         self._g += 1
@@ -162,14 +175,18 @@ class NpuzzleBoard:
 
         if 0 <= new_null_x < self._size and 0 <= new_null_y < self._size:
             new_board = NpuzzleBoard(self)
-            new_board._change_null(new_null_x, new_null_y)
+            new_board._puzzle[self._null_y][self._null_x].number, new_board._puzzle[new_null_y][new_null_x].number = \
+                new_board._puzzle[new_null_y][new_null_x].number, new_board._puzzle[self._null_y][self._null_x].number
             new_board._update_generation()
             new_board._parent = self
+            print new_board
             return new_board
+
 
     def get_available_boards(self):
         boards = []
         val = [-1, 0, 1, 0, -1]
+        # if self._null_x - 1 > 0:
         for i in range(4):
             inner_new_board = self._new_board_with(val[i], val[i+1])
             if inner_new_board:
@@ -178,7 +195,8 @@ class NpuzzleBoard:
 
     def __cmp__(self, other):
         if isinstance(other, NpuzzleBoard):
-            return cmp(other._puzzle, self._puzzle)
+            p = str(other._puzzle) == str(self._puzzle)
+            return not p
         return False
 
     def __lt__(self, other):
@@ -223,6 +241,8 @@ if __name__ == "__main__":
     #     print(new_board)
     #     print(new_board.get_final_weight())
     else:
+        # boards = board.get_available_boards()
+        #
+        # print cmp(boards + boards, boards)
         solve_puzzle(board)
-
-
+#
