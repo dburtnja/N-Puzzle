@@ -11,10 +11,12 @@ class Cell:
         self.x = x
         self.y = y
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
         if isinstance(other, Cell):
             p = self.number == other.number
             return p
+        if isinstance(other, int):
+            return self.number == other
         return False
 
     def __lt__(self, other):
@@ -38,6 +40,8 @@ class NpuzzleBoard:
         self._solved = False
         self._parent = None
         self._puzzle = []
+        self._final_weight = None
+
         if isinstance(board_file, NpuzzleBoard):
             self.__dict__.update(deepcopy(board_file.__dict__))
         elif isinstance(board_file, str):
@@ -50,7 +54,6 @@ class NpuzzleBoard:
             self._sorted_array = [i for i in range(1, self._values_size + 1)]
             self._sorted_array[self._values_size - 1] = 0
             self._sorted_cells = [Cell(number, sorted_puzzle[i].x, sorted_puzzle[i].y) for i, number in enumerate(self._sorted_array)]
-        self._final_weight = self._get_final_weight()
 
     def _create_board(self, board_lines):
         y = 0
@@ -79,7 +82,7 @@ class NpuzzleBoard:
 
     def _get_null_row(self):
         for i in range(self._size):
-            if Cell(0, None, None) in self._puzzle[i]:
+            if 0 in self._puzzle[i]:
                 return i
 
     def go_by_order(self):
@@ -177,26 +180,28 @@ class NpuzzleBoard:
             new_board = NpuzzleBoard(self)
             new_board._puzzle[self._null_y][self._null_x].number, new_board._puzzle[new_null_y][new_null_x].number = \
                 new_board._puzzle[new_null_y][new_null_x].number, new_board._puzzle[self._null_y][self._null_x].number
+            new_board._null_x = new_null_x
+            new_board._null_y = new_null_y
             new_board._update_generation()
             new_board._parent = self
-            print new_board
+            new_board._final_weight = new_board._get_final_weight()
+            # print new_board
             return new_board
 
 
     def get_available_boards(self):
         boards = []
         val = [-1, 0, 1, 0, -1]
-        # if self._null_x - 1 > 0:
+        #if self._null_x - 1 > 0:
         for i in range(4):
             inner_new_board = self._new_board_with(val[i], val[i+1])
             if inner_new_board:
                 boards.append(inner_new_board)
         return boards
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
         if isinstance(other, NpuzzleBoard):
-            p = str(other._puzzle) == str(self._puzzle)
-            return not p
+            return str(other._puzzle) == str(self._puzzle)
         return False
 
     def __lt__(self, other):
@@ -211,16 +216,17 @@ def solve_puzzle(board):
 
     while opened:
         current = opened.pop(0)
-        print("----------->")
-        print(current)
-        print("<-----------")
+        # print("----------->")
+        # print(current)
+        # print("<-----------")
         if current.is_solved():
-            return opened[0]
+            return current
         insort(closed, current)
         for new_board in current.get_available_boards():
             if new_board in closed:
-                print("New board in closed")
-                print(new_board)
+                q = 1
+                # print("New board in closed")
+                # print(new_board)
             elif new_board not in opened:
                 insort(opened, new_board)
 
@@ -228,7 +234,7 @@ def solve_puzzle(board):
 if __name__ == "__main__":
     generate = True
     if generate:
-        out = check_output(['python', 'npuzzle-gen.py', '-s', '3'])
+        out = check_output(['python', 'npuzzle-gen.py', '-s', '5'])
         print(out)
         board = NpuzzleBoard(out)
     else:
@@ -244,5 +250,8 @@ if __name__ == "__main__":
         # boards = board.get_available_boards()
         #
         # print cmp(boards + boards, boards)
-        solve_puzzle(board)
+        from time import time
+        t = time()
+        print solve_puzzle(board)
+        print "TIME = " + str(time() - t)
 #
