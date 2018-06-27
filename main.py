@@ -209,6 +209,9 @@ class NpuzzleBoard:
             return self._final_weight < other._final_weight
         return False
 
+    def get_parent(self):
+        return self._parent
+
 
 def solve_puzzle(board):
     opened = [board]
@@ -234,7 +237,7 @@ def solve_puzzle(board):
 if __name__ == "__main__":
     generate = True
     if generate:
-        out = check_output(['python', 'npuzzle-gen.py', '-s', '5'])
+        out = check_output(['python', 'npuzzle-gen.py', '-s', '3'])
         print(out)
         board = NpuzzleBoard(out)
     else:
@@ -252,6 +255,12 @@ if __name__ == "__main__":
         # print cmp(boards + boards, boards)
         from time import time
         t = time()
-        print solve_puzzle(board)
-        print "TIME = " + str(time() - t)
+        solved = solve_puzzle(board)
+        i = 0
+        while solved:
+            print(solved)
+            solved = solved.get_parent()
+            i += 1
+
+        print "TIME = " + str(time() - t) , i
 #
