@@ -8,7 +8,8 @@ int main() {
     std::cout << "Hello, World!" << cell << std::endl;
     PuzzleReader reader;
 
-    std::cout << reader.runCommand("python ../../npuzzle-gen.py -s 3");
+//    reader.getFromCommand("python ../../npuzzle-gen.py -s 3");
+    reader.getFromFile("../test.txt");
 //    std::cout << reader.runCommand("ls ../..");
 
     return 0;

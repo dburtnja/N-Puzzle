@@ -11,7 +11,7 @@
 
 class NpuzzleBoard {
 private:
-    std::vector<Cell>   _puzzle
+    std::vector<Cell>   _puzzle;
     short               _size;
     NpuzzleBoard();
 

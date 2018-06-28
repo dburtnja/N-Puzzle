@@ -11,10 +11,12 @@
 #include <iostream>
 #include <fstream>
 #include "Cell.hpp"
+#include <sstream>
 
 class PuzzleReader {
 private:
     std::vector<Cell>   &_createVectorFromFile(std::string const &filename);
+    void _splitString(std::string input, char delimiter, std::vector<std::string> &result);
 
 public:
     PuzzleReader();
@@ -23,6 +25,8 @@ public:
 
     PuzzleReader &operator=(PuzzleReader const & obj);
     std::vector<Cell>   &getFromCommand(std::string const & command);
+    std::vector<Cell>   &getFromFile(std::string const & filename);
+
 };
 
 
