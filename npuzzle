@@ -1,5 +1,23 @@
 from sys import argv
 from main import *
+from argparse import ArgumentParser
+
+def generate_puzzle():
+    print "npuzzle [-h] [-s] [-u] [-i ITERATIONS] size"
+    print "press enter to set: 'npuzzle 3"
+    npuzzle_gen = raw_input("npuzzle ")
+    if not npuzzle_gen:
+        npuzzle_gen = ['3']
+    else:
+        npuzzle_gen = npuzzle_gen.split()
+    out = check_output(['python', 'npuzzle-gen.py'] + npuzzle_gen)
+    print out
+    return NpuzzleBoard(out)
+
+def read_from_file():
+    puzzle_file = askopenfile()
+    return NpuzzleBoard(puzzle_file)
+
 
 if __name__ == "__main__":
     available_flags = {
@@ -12,14 +30,12 @@ if __name__ == "__main__":
         for arg in argv[1:]:
             if arg not in available_flags.keys():
                 print "Flag {} doesn't support".format(arg)
-    # generate = True
-    # if generate:
-    #     out = check_output(['python', 'npuzzle-gen.py', '3', '-i', '100'])
-    #     print(out)
-    #     board = NpuzzleBoard(out)
-    # else:
-    #     puzzle_file = askopenfile()
-    #     board = NpuzzleBoard(puzzle_file)
+
+    if '-g' in argv:
+        board = generate_puzzle()
+    elif '-f' in argv:
+        board = read_from_file()
+
     # if not board.is_solvable():
     #     print("This puzzle is unsolvable")
     # else:
