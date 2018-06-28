@@ -13,6 +13,7 @@ def manhattan_distance(self):
         self._solved = True
     return final_dist + diff_elements
 
+
 def misplaced_tiles(self):
     diff_elements = 0
 
@@ -25,6 +26,7 @@ def misplaced_tiles(self):
     if diff_elements == 0:
         self._solved = True
     return diff_elements
+
 
 def out_of_row_and_colomns(self):
     row = 0
@@ -39,3 +41,11 @@ def out_of_row_and_colomns(self):
                     col += 1
                 break
     return row + col
+
+
+def get_heuristic():
+    return {
+        '-m': manhattan_distance,
+        '-p': misplaced_tiles,
+        '-o': out_of_row_and_colomns
+    }

@@ -34,8 +34,9 @@ class NpuzzleBoard:
     _values_size = None
     _size = None
     _g = 0
+    _h_functions = []
 
-    def __init__(self, board_file):
+    def __init__(self, board_file, heuristic_function):
         self._solved = False
         self._parent = None
         self._puzzle = []
@@ -200,25 +201,3 @@ class NpuzzleBoard:
         if isinstance(other, NpuzzleBoard):
             return self._final_weight < other._final_weight
         return False
-
-
-if __name__ == "__main__":
-    generate = False
-    try:
-        if generate:
-            out = check_output(['python', 'npuzzle-gen.py', '3', '-i', '100'])
-            print(out)
-            board = NpuzzleBoard(out)
-        else:
-            puzzle_file = askopenfile()
-            board = NpuzzleBoard(puzzle_file)
-            if not board.is_solvable():
-                print("This puzzle is unsolvable")
-            else:
-                from time import time
-                t = time()
-                print "TIME = " + str(time() - t)
-    except:
-        print("This puzzle is unsolvable")
-
-    #

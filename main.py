@@ -218,21 +218,7 @@ class NpuzzleBoard:
         return False
 
 
-def solve_puzzle(board):
-    opened = [board]
-    closed = []
 
-    while opened:
-        current = opened.pop(0)
-        if current.is_solved():
-            return current
-        insort(closed, current)
-        for new_board in current.get_available_boards():
-            if new_board in closed:
-                q = 1
-            elif new_board not in opened:
-                new_board._final_weight += 1
-                insort(opened, new_board)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,11 @@
 from sys import argv
-from main import *
+from NpuzzleBoard import *
 from argparse import ArgumentParser
+from time import time
+from heuristic_functions import get_heuristic
 
-def generate_puzzle():
+
+def generate_puzzle(heuristic_func):
     print "npuzzle [-h] [-s] [-u] [-i ITERATIONS] size"
     print "press enter to set: 'npuzzle 3"
     npuzzle_gen = raw_input("npuzzle ")
@@ -12,34 +15,67 @@ def generate_puzzle():
         npuzzle_gen = npuzzle_gen.split()
     out = check_output(['python', 'npuzzle-gen.py'] + npuzzle_gen)
     print out
-    return NpuzzleBoard(out)
+    return NpuzzleBoard(out, heuristic_func)
 
-def read_from_file():
+
+def read_from_file(heuristic_func):
     puzzle_file = askopenfile()
-    return NpuzzleBoard(puzzle_file)
+    return NpuzzleBoard(puzzle_file, heuristic_func)
+
+
+def solve_puzzle(board):
+    opened = [board]
+    closed = []
+
+    while opened:
+        current = opened.pop(0)
+        if current.is_solved():
+            return current
+        insort(closed, current)
+        for new_board in current.get_available_boards():
+            if new_board in closed:
+                q = 1
+            elif new_board not in opened:
+                new_board._final_weight += 1
+                insort(opened, new_board)
+
+
+def get_selected_heuristics(argv):
+    h_functions = get_heuristic()
+    if set(argv) - set(h_functions.keys()) <= 0:
+        return [h_function for key, h_function in h_functions.items()]
+    return [h_function for key, h_function in h_functions.items() if key in argv]
+
 
 
 if __name__ == "__main__":
     available_flags = {
         "-g": "Puzzle generated from npyzzle-gen.py (default)",
         "-f": "Read puzzle from file",
-        "-m": "Heuristic: Manhattan-distance (default)",
-        "-p": "Heuristic: Misplaced titles"
+        "-m": "Heuristic: Manhattan-distance",
+        "-p": "Heuristic: Misplaced titles",
+        "-o": "Heuristic: Wrong rows and columns",
+        "-h": "Print usage" #TODO
     }
-    if len(set(argv[1:]) - set(available_flags.keys())) > 0:
-        for arg in argv[1:]:
+    argv = argv[1:]
+    if len(set(argv) - set(available_flags.keys())) > 0:
+        for arg in argv:
             if arg not in available_flags.keys():
                 print "Flag {} doesn't support".format(arg)
+    try:
+        h_functions = get_selected_heuristics(argv)
+        print h_functions
 
-    if '-g' in argv:
-        board = generate_puzzle()
-    elif '-f' in argv:
-        board = read_from_file()
+        if '-f' in argv:
+            board = read_from_file(h_functions)
+        else:
+            board = generate_puzzle(h_functions)
 
-    # if not board.is_solvable():
-    #     print("This puzzle is unsolvable")
-    # else:
-    #     from time import time
-    #     t = time()
-    #     print solve_puzzle(board)
-    #     print "TIME = " + str(time() - t)
+        if not board.is_solvable():
+            print("This puzzle is unsolvable")
+        else:
+            t = time()
+            print solve_puzzle(board)
+            print "TIME = " + str(time() - t)
+    except:
+        print("This puzzle is unsolvable")
