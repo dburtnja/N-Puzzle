@@ -119,18 +119,26 @@ class NpuzzleBoard:
         return self._solved
 
     def is_solvable(self):
-        if self._size % 2 == 0:
-            ordered_puzzle = sum(self._puzzle, [])
-        else:
-            ordered_puzzle = list(self.go_by_order())
+        # if self._size % 2 != 0:
+
+        ordered_puzzle = sum(self._puzzle, [])
+        row = abs((ordered_puzzle.index(0) / self._size) - self._size)
+        # else:
+        #     ordered_puzzle = list(self.go_by_order())
+        #     row = abs((ordered_puzzle.index(0) / self._size) - self._size)
         my_sum = 0
 
+        if ((self._size - 2) / 4) % 2 == 1:
+             my_sum += 1
         for i in range(self._size ** 2):
-            my_sum += len([n.number for n in ordered_puzzle[i:] if n.number < ordered_puzzle[i] and n.number != 0])
+            my_sum += len([n.number for n in ordered_puzzle[i:] if n < ordered_puzzle[i] and n.number != 0])
         if self._size % 2 == 0:
-            return (my_sum + self._null_y + 1) % 2 == 0
+            if row % 2 == 0:
+                return my_sum % 2 != 0
+            else:
+                return my_sum % 2 == 0
         else:
-            return my_sum % 2 == 0
+            return my_sum % 2 != 0
 
     def __str__(self):
         result = [" ".join(str(el.number) for el in line) for line in self._puzzle]
@@ -216,17 +224,12 @@ def solve_puzzle(board):
 
     while opened:
         current = opened.pop(0)
-        # print("----------->")
-        # print(current)
-        # print("<-----------")
         if current.is_solved():
             return current
         insort(closed, current)
         for new_board in current.get_available_boards():
             if new_board in closed:
                 q = 1
-                # print("New board in closed")
-                # print(new_board)
             elif new_board not in opened:
                 insort(opened, new_board)
 
@@ -234,7 +237,7 @@ def solve_puzzle(board):
 if __name__ == "__main__":
     generate = True
     if generate:
-        out = check_output(['python', 'npuzzle-gen.py', '-s', '5'])
+        out = check_output(['python', 'npuzzle-gen.py', '3', '-i', '100'])
         print(out)
         board = NpuzzleBoard(out)
     else:
@@ -242,14 +245,7 @@ if __name__ == "__main__":
         board = NpuzzleBoard(puzzle_file)
     if not board.is_solvable():
         print("This puzzle is unsolvable")
-    # for new_board in board.get_available_boards():
-    #     print('\n')
-    #     print(new_board)
-    #     print(new_board.get_final_weight())
     else:
-        # boards = board.get_available_boards()
-        #
-        # print cmp(boards + boards, boards)
         from time import time
         t = time()
         print solve_puzzle(board)
