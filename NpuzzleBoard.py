@@ -3,7 +3,6 @@ from subprocess import check_output
 from copy import deepcopy
 from bisect import insort
 
-
 class Cell:
 
     def __init__(self, number, x, y):
@@ -41,6 +40,7 @@ class NpuzzleBoard:
         self._parent = None
         self._puzzle = []
         self._final_weight = None
+        self.puzzle_as_list = None
 
         if isinstance(board_file, NpuzzleBoard):
             self.__dict__.update(deepcopy(board_file.__dict__))
@@ -119,19 +119,16 @@ class NpuzzleBoard:
         return self._solved
 
     def is_solvable(self):
-        # if self._size % 2 != 0:
-
         ordered_puzzle = sum(self._puzzle, [])
         row = abs((ordered_puzzle.index(0) / self._size) - self._size)
-        # else:
-        #     ordered_puzzle = list(self.go_by_order())
-        #     row = abs((ordered_puzzle.index(0) / self._size) - self._size)
         my_sum = 0
 
         if ((self._size - 2) / 4) % 2 == 1:
              my_sum += 1
         for i in range(self._size ** 2):
             my_sum += len([n.number for n in ordered_puzzle[i:] if n < ordered_puzzle[i] and n.number != 0])
+            if ordered_puzzle[i] not in self._sorted_array:
+                print(ordered_puzzle[i])
         if self._size % 2 == 0:
             if row % 2 == 0:
                 return my_sum % 2 != 0
@@ -143,18 +140,6 @@ class NpuzzleBoard:
     def __str__(self):
         result = [" ".join(str(el.number) for el in line) for line in self._puzzle]
         return str("\n".join(result)) + "\n" + str(self._final_weight)
-
-    # def _change_null(self, new_null_x, new_null_y):
-    #
-    #     if new_null_x != self._null_x:
-    #         self._puzzle[self._null_y][new_null_x], self._puzzle[self._null_y][self._null_x] = \
-    #             self._puzzle[self._null_y][self._null_x], self._puzzle[self._null_y][new_null_x]
-    #         self._null_x = new_null_x
-    #     if new_null_y != self._null_y:
-    #         self._puzzle[new_null_y][self._null_x], self._puzzle[self._null_y][self._null_x] =\
-    #             self._puzzle[self._null_y][self._null_x], self._puzzle[new_null_y][self._null_x]
-    #         self._null_y = new_null_y
-    #     self._puzzle[new_null_y][new_null_x]
 
     def _update_generation(self):
         self._g += 1
@@ -193,7 +178,6 @@ class NpuzzleBoard:
             new_board._update_generation()
             new_board._parent = self
             new_board._final_weight = new_board._get_final_weight()
-            # print new_board
             return new_board
 
 
@@ -218,40 +202,23 @@ class NpuzzleBoard:
         return False
 
 
-def solve_puzzle(board):
-    opened = [board]
-    closed = []
-
-    while opened:
-        current = opened.pop(0)
-        if current.is_solved():
-            return current
-        insort(closed, current)
-        for new_board in current.get_available_boards():
-            if new_board in closed:
-                q = 1
-            elif new_board not in opened:
-                new_board._final_weight += 1
-                insort(opened, new_board)
-
-
 if __name__ == "__main__":
-    from heuristic_functions import out_of_row_and_colomns
-    generate = True
-    if generate:
-        out = check_output(['python', 'npuzzle-gen.py', '3', '-i', '100'])
-        print(out)
-        board = NpuzzleBoard(out)
-    else:
-        puzzle_file = askopenfile()
-        board = NpuzzleBoard(puzzle_file)
-    if not board.is_solvable():
+    generate = False
+    try:
+        if generate:
+            out = check_output(['python', 'npuzzle-gen.py', '3', '-i', '100'])
+            print(out)
+            board = NpuzzleBoard(out)
+        else:
+            puzzle_file = askopenfile()
+            board = NpuzzleBoard(puzzle_file)
+            if not board.is_solvable():
+                print("This puzzle is unsolvable")
+            else:
+                from time import time
+                t = time()
+                print "TIME = " + str(time() - t)
+    except:
         print("This puzzle is unsolvable")
-    else:
-        from time import time
-        t = time()
-        # print solve_puzzle(board)
-        out_of_row_and_colomns(board)
-        print "TIME = " + str(time() - t)
 
-#
+    #
