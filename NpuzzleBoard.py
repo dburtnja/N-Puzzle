@@ -42,8 +42,9 @@ class NpuzzleBoard:
         self._solved = False
         self._parent = None
         self._puzzle = []
-        self._final_weight = None
         self.puzzle_as_list = None
+        self._final_weight = None
+        self.generation = 0
 
         if heuristic_function:
             self._h_functions += heuristic_function
@@ -58,11 +59,16 @@ class NpuzzleBoard:
         if not self._values_size:
             self._values_size = self._size ** 2
 
+
         if not self._sorted_array:
             sorted_puzzle = list(self.go_by_order())
             self._sorted_array += [i for i in range(1, self._values_size + 1)]
             self._sorted_array[self._values_size - 1] = 0
             self._sorted_cells = [Cell(number, sorted_puzzle[i].x, sorted_puzzle[i].y) for i, number in enumerate(self._sorted_array)]
+        if not self._final_weight:
+            self._final_weight = self._get_final_weight()
+
+
 
     def _create_board(self, board_lines):
         y = 0
@@ -127,25 +133,6 @@ class NpuzzleBoard:
     def is_solved(self):
         return self._solved
 
-    def is_solvable(self):
-        ordered_puzzle = sum(self._puzzle, [])
-        row = abs((ordered_puzzle.index(0) / self._size) - self._size)
-        my_sum = 0
-
-        if ((self._size - 2) / 4) % 2 == 1:
-             my_sum += 1
-        for i in range(self._size ** 2):
-            my_sum += len([n.number for n in ordered_puzzle[i:] if n < ordered_puzzle[i] and n.number != 0])
-            if ordered_puzzle[i] not in self._sorted_array:
-                print(ordered_puzzle[i])
-        if self._size % 2 == 0:
-            if row % 2 == 0:
-                return my_sum % 2 != 0
-            else:
-                return my_sum % 2 == 0
-        else:
-            return my_sum % 2 != 0
-
     def __str__(self):
         result = [" ".join(str(el.number) for el in line) for line in self._puzzle]
         return str("\n".join(result)) + "\n" + str(self._final_weight)
@@ -153,22 +140,14 @@ class NpuzzleBoard:
     def _update_generation(self):
         self._g += 1
 
-    def _get_final_weight(self):
-        final_dist = 0
-        diff_elements = 0
+    def _get_final_weight(self, coords=None):
+        if self._final_weight is None:
+            self._final_weight = 0
+        for func in self._h_functions:
 
-        for cell in self.go_by_order():
-            for const_cel in self._sorted_cells:
-                if cell.number == const_cel.number:
-                    if (cell.x, cell.y) != (const_cel.x, const_cel.y):
-                        diff_elements += 1
-                    if cell.number != 0:
-                        final_dist += self._get_dist(cell, const_cel)
-                    break
-        if diff_elements == 0:
-            self._solved = True
-        return final_dist + diff_elements
+             self._final_weight += func(self, coords=coords)
 
+        return  self._final_weight
 
     def _get_dist(self, cell, const_cell):
         return abs(cell.x - const_cell.x) + abs(cell.y - const_cell.y)
@@ -182,18 +161,19 @@ class NpuzzleBoard:
             new_board = NpuzzleBoard(self)
             new_board._puzzle[self._null_y][self._null_x].number, new_board._puzzle[new_null_y][new_null_x].number = \
                 new_board._puzzle[new_null_y][new_null_x].number, new_board._puzzle[self._null_y][self._null_x].number
+            number = new_board._puzzle[self._null_y][self._null_x]
+            new_board._final_weight = self._final_weight
+            new_board._get_final_weight(coords=(number, null_x, null_y))
             new_board._null_x = new_null_x
             new_board._null_y = new_null_y
-            new_board._update_generation()
             new_board._parent = self
-            new_board._final_weight = new_board._get_final_weight()
+            # new_board.generation = self.generation + 1
             return new_board
 
 
     def get_available_boards(self):
         boards = []
         val = [-1, 0, 1, 0, -1]
-        #if self._null_x - 1 > 0:
         for i in range(4):
             inner_new_board = self._new_board_with(val[i], val[i+1])
             if inner_new_board:

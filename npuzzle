@@ -36,7 +36,7 @@ def solve_puzzle(board):
             if new_board in closed:
                 q = 1
             elif new_board not in opened:
-                new_board._final_weight += 1
+                # new_board._final_weight += 1
                 insort(opened, new_board)
 
 
@@ -79,20 +79,27 @@ if __name__ == "__main__":
         for arg in argv:
             if arg not in available_flags.keys():
                 print "Flag {} doesn't support".format(arg)
-    try:
-        h_functions = get_selected_heuristics(argv)
-        print h_functions
+    # try:
+    h_functions = get_selected_heuristics(argv)
+    print h_functions
 
-        if '-f' in argv:
-            board = read_from_file(h_functions)
-        else:
-            board = generate_puzzle(h_functions)
+    if '-f' in argv:
+        board = read_from_file(h_functions)
+    else:
+        board = generate_puzzle(h_functions)
 
-        if is_solvable(board):
-            t = time()
-            print solve_puzzle(board)
-            print "TIME = " + str(time() - t)
-        else:
-            print("This puzzle is unsolvable")
-    except:
-        print("This puzzle unsolvable")
+    if is_solvable(board):
+        t = time()
+        final_board = solve_puzzle(board)
+        print "TIME = " + str(time() - t)
+        result = []
+
+        while final_board._parent:
+            result.append(final_board)
+            final_board = final_board._parent
+        for result_board in result[::-1]:
+            print result_board
+    else:
+        print("This puzzle is unsolvable")
+    # except:
+    #     print("This puzzle unsolvable")
