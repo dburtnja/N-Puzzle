@@ -1,7 +1,7 @@
 from sys import argv
 from NpuzzleBoard import *
 from argparse import ArgumentParser
-from time import time
+from time import time, sleep
 from heuristic_functions import get_heuristic
 from os import system
 
@@ -24,7 +24,7 @@ def read_from_file(heuristic_func):
     return NpuzzleBoard(puzzle_file, heuristic_func)
 
 
-def solve_puzzle(board):
+def solve_puzzle(board, cur_message):
     opened = [board]
     closed = []
     opened_i = 0
@@ -34,6 +34,9 @@ def solve_puzzle(board):
     while opened:
         current = opened.pop(0)
         if current.is_solved():
+            cur_message.append("Total number of states ever selected in the 'opened' set: {}".format(opened_i))
+            cur_message.append("Maximum number of states ever represented in "
+                               "memory at the same time during the search: {}".format(all_i))
             return current
         insort(closed, current)
         for new_board in current.get_available_boards():
@@ -41,15 +44,28 @@ def solve_puzzle(board):
             if new_board not in closed and new_board not in opened:
                 insort(opened, new_board)
                 opened_i += 1
-    print "Total number of states ever selected in the 'opened' set: {}".format(opened_i)
-    print "Maximum number of states ever represented in memory at the same time during the search {}".format(all_i)
 
 
-def get_selected_heuristics(argv):
+def make_functions_list(flags, h_functions, argv=None):
+    result = []
+
+    print "Using heuristic:"
+    for key, h_function in h_functions.items():
+        if argv:
+            if key in argv:
+                result.append(h_function)
+                print "\t{}".format(flags[key])
+        else:
+            result.append(h_function)
+            print "\t{}".format(flags[key])
+    return result
+
+
+def get_selected_heuristics(argv, flags):
     h_functions = get_heuristic()
-    if set(argv) - set(h_functions.keys()) <= 0:
-        return [h_function for key, h_function in h_functions.items()]
-    return [h_function for key, h_function in h_functions.items() if key in argv]
+    if len(set(h_functions.keys()) - set(argv)) == len(h_functions.keys()):
+        return make_functions_list(flags, h_functions)
+    return  make_functions_list(flags, h_functions, argv)
 
 
 def is_solvable(board):
@@ -77,7 +93,6 @@ if __name__ == "__main__":
         "-m": "Heuristic: Manhattan-distance",
         "-p": "Heuristic: Misplaced titles",
         "-o": "Heuristic: Wrong rows and columns",
-        "-h": "Print usage" #TODO
     }
     argv = argv[1:]
     if len(set(argv) - set(available_flags.keys())) > 0:
@@ -85,8 +100,7 @@ if __name__ == "__main__":
             if arg not in available_flags.keys():
                 print "Flag {} doesn't support".format(arg)
     # try:
-    h_functions = get_selected_heuristics(argv)
-    print h_functions
+    h_functions = get_selected_heuristics(argv, available_flags)
 
     if '-f' in argv:
         board = read_from_file(h_functions)
@@ -95,18 +109,22 @@ if __name__ == "__main__":
 
     if is_solvable(board):
         t = time()
-        final_board = solve_puzzle(board)
+        message = ["NPUZZLE RESULT:"]
+
+        final_board = solve_puzzle(board, message)
         print "TIME = " + str(time() - t)
         result = []
 
         while final_board._parent:
             result.append(final_board)
             final_board = final_board._parent
-        print "Number of moves required to transition from the initial state to the final state," \
-              "according to the search: {}".format(len(result))
+        message += ["Number of moves required to transition from the initial state to the final state," \
+              "according to the search: {}".format(len(result))]
         for result_board in result[::-1]:
-            system('clear')
+            print "\033[2J"
+            print "\n".join(message)
             print result_board
+            sleep(0.3)
     else:
         print("This puzzle is unsolvable")
     # except:
