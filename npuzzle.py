@@ -3,12 +3,13 @@ from NpuzzleBoard import *
 from argparse import ArgumentParser
 from time import time
 from heuristic_functions import get_heuristic
+from os import system
 
 
 def generate_puzzle(heuristic_func):
-    print "npuzzle [-h] [-s] [-u] [-i ITERATIONS] size"
-    print "press enter to set: 'npuzzle 3"
-    npuzzle_gen = raw_input("npuzzle ")
+    print "npuzzle-gen.py [-h] [-s] [-u] [-i ITERATIONS] size"
+    print "press enter to set: 'npuzzle-gen.py 3"
+    npuzzle_gen = raw_input("npuzzle-gen.py ")
     if not npuzzle_gen:
         npuzzle_gen = ['3']
     else:
@@ -104,6 +105,7 @@ if __name__ == "__main__":
         print "Number of moves required to transition from the initial state to the final state," \
               "according to the search: {}".format(len(result))
         for result_board in result[::-1]:
+            system('clear')
             print result_board
     else:
         print("This puzzle is unsolvable")

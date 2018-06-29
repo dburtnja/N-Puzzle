@@ -225,7 +225,7 @@ if __name__ == "__main__":
     from heuristic_functions import out_of_row_and_colomns
     generate = True
     if generate:
-        out = check_output(['python', 'npuzzle-gen.py', '3', '-i', '100'])
+        out = check_output(['python', 'npuzzle.py-gen.py', '3', '-i', '100'])
         print(out)
         board = NpuzzleBoard(out)
     else:
