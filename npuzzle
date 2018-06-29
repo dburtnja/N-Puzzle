@@ -26,6 +26,9 @@ def read_from_file(heuristic_func):
 def solve_puzzle(board):
     opened = [board]
     closed = []
+    opened_i = 0
+    all_i = 0
+
 
     while opened:
         current = opened.pop(0)
@@ -33,11 +36,12 @@ def solve_puzzle(board):
             return current
         insort(closed, current)
         for new_board in current.get_available_boards():
-            if new_board in closed:
-                q = 1
-            elif new_board not in opened:
-                # new_board._final_weight += 1
+            all_i += 1
+            if new_board not in closed and new_board not in opened:
                 insort(opened, new_board)
+                opened_i += 1
+    print "Total number of states ever selected in the 'opened' set: {}".format(opened_i)
+    print "Maximum number of states ever represented in memory at the same time during the search {}".format(all_i)
 
 
 def get_selected_heuristics(argv):
@@ -97,6 +101,8 @@ if __name__ == "__main__":
         while final_board._parent:
             result.append(final_board)
             final_board = final_board._parent
+        print "Number of moves required to transition from the initial state to the final state," \
+              "according to the search: {}".format(len(result))
         for result_board in result[::-1]:
             print result_board
     else:

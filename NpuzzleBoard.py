@@ -147,7 +147,7 @@ class NpuzzleBoard:
 
              self._final_weight += func(self, coords=coords)
 
-        return  self._final_weight
+        return  self._final_weight + self.generation
 
     def _get_dist(self, cell, const_cell):
         return abs(cell.x - const_cell.x) + abs(cell.y - const_cell.y)
@@ -167,7 +167,7 @@ class NpuzzleBoard:
             new_board._null_x = new_null_x
             new_board._null_y = new_null_y
             new_board._parent = self
-            # new_board.generation = self.generation + 1
+            new_board.generation = self.generation + 1
             return new_board
 
 
