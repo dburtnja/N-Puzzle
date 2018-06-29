@@ -3,6 +3,7 @@ from subprocess import check_output
 from copy import deepcopy
 from bisect import insort
 
+
 class Cell:
 
     def __init__(self, number, x, y):
@@ -29,19 +30,23 @@ class Cell:
     def __repr__(self):
         return str(self.number)
 
+
 class NpuzzleBoard:
-    _sorted_array = None
+    _sorted_array = []
     _values_size = None
     _size = None
     _g = 0
     _h_functions = []
 
-    def __init__(self, board_file, heuristic_function):
+    def __init__(self, board_file, heuristic_function=None):
         self._solved = False
         self._parent = None
         self._puzzle = []
         self._final_weight = None
         self.puzzle_as_list = None
+
+        if heuristic_function:
+            self._h_functions += heuristic_function
 
         if isinstance(board_file, NpuzzleBoard):
             self.__dict__.update(deepcopy(board_file.__dict__))
@@ -49,10 +54,13 @@ class NpuzzleBoard:
             self._create_board(board_file.split('\n'))
         else:
             self._create_board(board_file.readlines())
+
+        if not self._values_size:
+            self._values_size = self._size ** 2
+
         if not self._sorted_array:
             sorted_puzzle = list(self.go_by_order())
-            self._values_size = self._size ** 2
-            self._sorted_array = [i for i in range(1, self._values_size + 1)]
+            self._sorted_array += [i for i in range(1, self._values_size + 1)]
             self._sorted_array[self._values_size - 1] = 0
             self._sorted_cells = [Cell(number, sorted_puzzle[i].x, sorted_puzzle[i].y) for i, number in enumerate(self._sorted_array)]
 

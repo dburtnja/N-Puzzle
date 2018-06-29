@@ -47,6 +47,23 @@ def get_selected_heuristics(argv):
     return [h_function for key, h_function in h_functions.items() if key in argv]
 
 
+def is_solvable(board):
+    ordered_puzzle = sum(board._puzzle, [])
+    row = abs((ordered_puzzle.index(0) / board._size) - board._size)
+    my_sum = 0
+
+    if ((board._size - 2) / 4) % 2 == 1:
+        my_sum += 1
+    for i in range(board._size ** 2):
+        my_sum += len([n.number for n in ordered_puzzle[i:] if n < ordered_puzzle[i] and n.number != 0])
+    if board._size % 2 == 0:
+        if row % 2 == 0:
+            return my_sum % 2 != 0
+        else:
+            return my_sum % 2 == 0
+    else:
+        return my_sum % 2 != 0
+
 
 if __name__ == "__main__":
     available_flags = {
@@ -71,11 +88,11 @@ if __name__ == "__main__":
         else:
             board = generate_puzzle(h_functions)
 
-        if not board.is_solvable():
-            print("This puzzle is unsolvable")
-        else:
+        if is_solvable(board):
             t = time()
             print solve_puzzle(board)
             print "TIME = " + str(time() - t)
+        else:
+            print("This puzzle is unsolvable")
     except:
-        print("This puzzle is unsolvable")
+        print("This puzzle unsolvable")
